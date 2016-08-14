@@ -1,0 +1,17 @@
+{
+    "name": "awaresoft/MenuBundle",
+    "type": "symfony-bundle",
+    "description": "Symfony Awaresoft MenuBundle with Sonata libraries",
+    "require": {
+        "php": ">= 7",
+        "symfony/symfony": "2.*",
+        "doctrine/orm": "2.*",
+        "doctrine/doctrine-bundle": "1.*",
+        "doctrine/doctrine-fixtures-bundle": "2.*",
+        "knplabs/knp-menu-bundle": "2.*",
+        "sonata-project/admin-bundle": "3.*",
+        "sonata-project/block-bundle": "3.*"
+    },"autoload": {
+    "psr-4": { "Awaresoft\\MenuBundle\\": "" }
+}
+}

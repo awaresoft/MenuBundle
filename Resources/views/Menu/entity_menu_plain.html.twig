@@ -1,0 +1,9 @@
+{% extends 'knp_menu.html.twig' %}
+
+{% block list %}
+    {% if item.extras.object and item.extras.object.header %}
+        <h2>{{ item.extras.object.header }}</h2>
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

@@ -1,0 +1,13 @@
+services:
+    awaresoft.menu.admin.menu:
+        class: Awaresoft\MenuBundle\Admin\MenuAdmin
+        tags:
+            - { name: sonata.admin, manager_type: orm, group: admin.admin.menu_group_site_builder, label: menu.admin.menu.menu }
+        arguments:
+            - null
+            - Application\MenuBundle\Entity\Menu
+            - AwaresoftMenuBundle:MenuCRUD
+            - "@service_container"
+        calls:
+            - [setSiteManager, ["@sonata.page.manager.site"]]
+            - [setTemplate, [tree, 'AwaresoftMenuBundle:CRUD:tree.html.twig']]

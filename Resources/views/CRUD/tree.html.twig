@@ -1,0 +1,33 @@
+{% extends 'AwaresoftTreeBundle:CRUD:base_tree.html.twig' %}
+{% import _self as tree_child %}
+
+
+{% block tree_content %}
+    {{ tree_child.elements(elements, admin, true, multisite) }}
+{% endblock %}
+
+{% macro elements(elements, admin, root, multisite) %}
+    <ul{% if root %} class="sonata-tree sonata-tree--toggleable js-treeview"{% endif %}>
+        {% for element in elements if (not element.parent or not root) %}
+            <li class="sonata-ba-list-field" objectId="{{ element.id }}">
+                <div class="sonata-tree__item is-toggled" data-treeview-toggled>
+                    {% if element.parent or root %}<i class="fa fa-caret-right" data-treeview-toggler></i>{% endif %}
+                    {% if root and multisite %}
+                        <img class="sonata-tree__item__flag" src="{{ asset('bundles/sonatatranslation/img/flags/' ~ element.site.locale ~'.png') }}" alt="{{ element.site.locale }}"/>
+                    {% endif %}
+                    <a class="sonata-tree__item__edit" href="{{ admin.generateObjectUrl('edit', element) }}">{{ element }}</a>
+                    <i class="text-muted">{{ element.url }}</i>
+                    {% if element.enabled %}
+                        <span class="label label-success pull-right"><i class="fa fa-check"></i> {{ 'admin.admin.enabled' |trans }}</span>
+                    {% else %}
+                        <span class="label label-danger pull-right"><i class="fa fa-times"></i> {{ 'admin.admin.disabled' |trans }}</span>
+                    {% endif %}
+                    {% include 'AwaresoftTreeBundle:CRUD:tree_change_postion.html.twig' %}
+                </div>
+                {% if element.children|length %}
+                    {{ _self.elements(element.children, admin, false) }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
