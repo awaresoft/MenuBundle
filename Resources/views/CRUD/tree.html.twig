@@ -23,6 +23,7 @@
                         <span class="label label-danger pull-right"><i class="fa fa-times"></i> {{ 'admin.admin.disabled' |trans }}</span>
                     {% endif %}
                     {% include 'AwaresoftTreeBundle:CRUD:tree_change_postion.html.twig' %}
+                    <div class="clearfix"></div>
                 </div>
                 {% if element.children|length %}
                     {{ _self.elements(element.children, admin, false) }}
