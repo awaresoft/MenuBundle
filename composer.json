@@ -1,5 +1,5 @@
 {
-    "name": "awaresoft/MenuBundle",
+    "name": "awaresoft/menu-bundle",
     "type": "symfony-bundle",
     "description": "Symfony Awaresoft MenuBundle with Sonata libraries",
     "require": {
