@@ -18,7 +18,6 @@ use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
  */
 class MenuBlock extends BaseMenuBlockService
 {
-
     /**
      * Constructor
      *
@@ -28,7 +27,7 @@ class MenuBlock extends BaseMenuBlockService
      * @param array $menus
      * @param ContainerInterface $container
      */
-    public function __construct($name, EngineInterface $templating, MenuProviderInterface $menuProvider, array $menus = array(), ContainerInterface $container)
+    public function __construct($name, EngineInterface $templating, MenuProviderInterface $menuProvider, array $menus = [], ContainerInterface $container)
     {
         parent::__construct($name, $templating, $menuProvider, $menus);
 
@@ -54,7 +53,7 @@ class MenuBlock extends BaseMenuBlockService
      */
     public function configureSettings(OptionsResolver $resolver)
     {
-        $resolver->setDefaults(array(
+        $resolver->setDefaults([
             'title' => $this->getName(),
             'cache_policy' => 'public',
             'template' => 'AwaresoftMenuBundle:Block:block_menu.html.twig',
@@ -69,8 +68,8 @@ class MenuBlock extends BaseMenuBlockService
             'menu_template' => null,
             'route' => null,
             'url' => null,
-            'extra' => null
-        ));
+            'extra' => null,
+        ]);
     }
 
     /**
@@ -78,9 +77,9 @@ class MenuBlock extends BaseMenuBlockService
      */
     protected function getFormSettingsKeys()
     {
-        return array(
-            array('menu_name', 'choice', array('choices' => $this->menus, 'required' => false)),
-        );
+        return [
+            ['menu_name', 'choice', ['choices' => $this->menus, 'required' => false]],
+        ];
     }
 
     /**
@@ -100,13 +99,13 @@ class MenuBlock extends BaseMenuBlockService
      */
     protected function getMenuSettings(array $settings)
     {
-        $mapping = array(
+        $mapping = [
             'route' => 'route',
             'url' => 'url',
-            'extra' => 'extra'
-        );
+            'extra' => 'extra',
+        ];
 
-        $options = array();
+        $options = [];
 
         foreach ($settings as $key => $value) {
             if (array_key_exists($key, $mapping) && null !== $value) {
