@@ -166,6 +166,7 @@ class MenuAdmin extends AbstractTreeAdmin
          */
         $object = $this->getSubject();
         $maxDepthLevel = $this->prepareMaxDepthLevel('MENU');
+        $disabledName = false;
 
         $formMapper
             ->with($this->trans('admin.admin.form.group.main'), ['class' => 'col-md-6'])->end()
@@ -173,8 +174,18 @@ class MenuAdmin extends AbstractTreeAdmin
             ->with($this->trans('admin.admin.form.group.optional'), ['class' => 'col-md-6'])->end();
 
         $formMapper
-            ->with($this->trans('admin.admin.form.group.main'))
-            ->add('name')
+            ->with($this->trans('admin.admin.form.group.main'));
+
+        if (!$this->isGranted("ROLE_SUPER_ADMIN") && $this->getSubject() && $this->getSubject()->getId() && $this->getSubject()->getLevel() == 0) {
+            $disabledName = true;
+        }
+
+        $formMapper
+            ->add('name', null, [
+                'disabled' => $disabledName,
+            ]);
+
+        $formMapper
             ->add('enabled', null, [
                 'required' => false,
             ]);
@@ -244,5 +255,9 @@ class MenuAdmin extends AbstractTreeAdmin
         $formMapper->setHelps([
             'url' => $this->trans('admin.admin.help.url_page_or_plaintext'),
         ]);
+
+        if ($disabledName) {
+            $formMapper->addHelp('name', $this->trans('menu.admin.help.name_as_group'));
+        }
     }
 }

@@ -2,3 +2,5 @@ menu:
     admin:
         menu:
             menu: Menu
+        help:
+            name_as_group: This is group of submenus and you can not edit the name.
