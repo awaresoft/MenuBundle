@@ -242,7 +242,7 @@ class Builder extends ContainerAware
      */
     protected function getRequest()
     {
-        return $this->container->get('request');
+        return $this->container->get('request_stack')->getCurrentRequest();
     }
 
     /**
