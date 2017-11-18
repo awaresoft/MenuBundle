@@ -2,7 +2,7 @@
 
 namespace Awaresoft\MenuBundle\DataFixtures\ORM;
 
-use Application\MenuBundle\Entity\Menu;
+use Awaresoft\MenuBundle\Entity\Menu;
 use Awaresoft\Doctrine\Common\DataFixtures\AbstractFixture as AwaresoftAbstractFixture;
 use Awaresoft\SettingBundle\Entity\Setting;
 use Awaresoft\SettingBundle\Entity\SettingHasField;
