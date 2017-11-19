@@ -199,7 +199,7 @@ class MenuAdmin extends AbstractTreeAdmin
 
         if ($this->hasSubject() && !$object->getId()) {
             $formMapper
-                ->add('site', null, ['required' => true, 'read_only' => true]);
+                ->add('site', null, ['required' => true, 'attr' => ['readonly' => true]]);
         }
 
         $this->addParentField($formMapper, $maxDepthLevel, $object->getSite());

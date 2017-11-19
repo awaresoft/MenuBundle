@@ -541,7 +541,11 @@ class Menu extends AbstractTreeNode
 
     public function __toString()
     {
-        return $this->getName();
+        if (!$this->name) {
+            return 'n/a';
+        }
+
+        return $this->name;
     }
 
     /**
