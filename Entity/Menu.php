@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\MappedSuperclass()
+ *
  * @Gedmo\Tree(type="nested")
  *
  * @author Bartosz Malec <b.malec@awaresoft.pl>
@@ -341,7 +342,7 @@ class Menu extends AbstractTreeNode
     }
 
     /**
-     * @return Page
+     * @return Page|PageInterface
      */
     public function getPage()
     {
@@ -349,11 +350,11 @@ class Menu extends AbstractTreeNode
     }
 
     /**
-     * @param Page $page
+     * @param Page|PageInterface $page
      *
      * @return $this
      */
-    public function setPage($page)
+    public function setPage(PageInterface $page)
     {
         $this->page = $page;
 
@@ -410,7 +411,8 @@ class Menu extends AbstractTreeNode
 
     /**
      * @param mixed $enabled
-     * @return void
+     *
+     * @return $this
      */
     public function setEnabled($enabled)
     {
