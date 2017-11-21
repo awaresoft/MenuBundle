@@ -1,1 +1,19 @@
+parameters:
+    awaresoft.menu.builder.menu.entity_class: AwaresoftMenuBundle:Menu
+    awaresoft.menu.builder.page.entity_class: AwaresoftSonataPageBundle:Page
+
 services:
+    awaresoft.menu.builder.menu:
+        class: Awaresoft\MenuBundle\Menu\Builder
+        arguments:
+            - "@knp_menu.factory"
+            - "@sonata.page.site.selector"
+            - "@doctrine.orm.entity_manager"
+            - "%awaresoft.menu.builder.menu.entity_class%"
+
+    awaresoft.menu.builder.page:
+        class: Awaresoft\MenuBundle\Menu\PageBuilder
+        arguments:
+            - "@knp_menu.factory"
+            - "@doctrine.orm.entity_manager"
+            - "%awaresoft.menu.builder.page.entity_class%"

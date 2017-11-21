@@ -10,8 +10,8 @@ use Knp\Menu\FactoryInterface;
 use Knp\Menu\ItemInterface;
 use Knp\Menu\MenuItem;
 use Awaresoft\MenuBundle\Exception\MenuException;
-use Symfony\Component\DependencyInjection\ContainerAware;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Class PageBuilder
@@ -19,16 +19,15 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @author Bartosz Malec <b.malec@awaresoft.pl>
  */
-class PageBuilder extends ContainerAware
+class PageBuilder
 {
-
     /**
      * @var Page
      */
     protected $menuItems;
 
     /**
-     * @var MenuItem
+     * @var MenuItem|ItemInterface
      */
     protected $menu;
 
@@ -48,24 +47,48 @@ class PageBuilder extends ContainerAware
     protected $homepage;
 
     /**
-     * Generate page aside menu
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var FactoryInterface
+     */
+    protected $factory;
+
+    /**
+     * PageBuilder constructor.
      *
      * @param FactoryInterface $factory
+     * @param EntityManager $em
+     * @param string $pageRepository
+     */
+    public function __construct(FactoryInterface $factory, EntityManager $em, string $pageRepository) {
+        $this->factory = $factory;
+        $this->em = $em;
+        $this->pageRepository = $this->em->getRepository($pageRepository);
+    }
+
+    /**
+     * Generate menu from cms pages
+     *
+     * @param RequestStack $requestStack
      * @param array $options
+     *
      * @return ItemInterface|MenuItem
+     *
      * @throws MenuException
      */
-    public function cmsMenu(FactoryInterface $factory, array $options)
+    public function menu(RequestStack $requestStack, array $options)
     {
-        $this->em = $this->getEntityManager();
-        $this->pageRepository = $this->getPageRepository();
-        $page = $this->getPage($options);
+        $this->request = $requestStack->getCurrentRequest();
 
+        $page = $this->getPage($options);
         if (!$page) {
             throw new MenuException('Selected page is not exists');
         }
 
-        $this->menu = $factory->createItem('root');
+        $this->menu = $this->factory->createItem('root');
         $this->homepage = $this->findHomepage($page->getSite());
 
         $parents = $this->findParents($page);
@@ -115,9 +138,9 @@ class PageBuilder extends ContainerAware
             return $this->pageRepository->findOneByRouteName($options['route']);
         }
 
-        $page = $this->container->get('request')->attributes->get('page');
-        $path = $this->container->get('request')->attributes->get('path');
-        $route = $this->container->get('request')->attributes->get('_route');
+        $page = $this->request->attributes->get('page');
+        $path = $this->request->attributes->get('path');
+        $route = $this->request->attributes->get('_route');
 
         if (!$page instanceof Page && $path) {
             $page = $this->pageRepository->findOneByUrl($path);
@@ -133,14 +156,15 @@ class PageBuilder extends ContainerAware
     /**
      * Add child to menu object
      *
-     * @param MenuItem $menu
+     * @param ItemInterface $menu
      * @param Page $item
      * @param bool $uri
-     * @return MenuItem
+     *
+     * @return ItemInterface
      */
-    protected function addChild(MenuItem $menu, Page $item, $uri = true)
+    protected function addChild(ItemInterface $menu, Page $item, $uri = true)
     {
-        $baseUrl = $this->getRequest()->getBaseUrl();
+        $baseUrl = $this->request->getBaseUrl();
         $uri = $uri ? $baseUrl . $item->getUrl() : false;
 
         $attributes = [];
@@ -200,7 +224,7 @@ class PageBuilder extends ContainerAware
      */
     protected function setCurrentItem(ItemInterface $menu)
     {
-        $menu->setCurrent($this->container->get('request')->getPathInfo());
+        $menu->setCurrent($this->request->getPathInfo());
     }
 
     /**
@@ -239,32 +263,6 @@ class PageBuilder extends ContainerAware
         }
 
         return $uri;
-    }
-
-    /**
-     * Return request from container
-     *
-     * @return Request
-     */
-    protected function getRequest()
-    {
-        return $this->container->get('request');
-    }
-
-    /**
-     * @return EntityManager
-     */
-    protected function getEntityManager()
-    {
-        return $this->container->get('doctrine.orm.entity_manager');
-    }
-
-    /**
-     * @return PageRepository
-     */
-    protected function getPageRepository()
-    {
-        return $this->em->getRepository('AwaresoftSonataPageBundle:Page');
     }
 
     /**

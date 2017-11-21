@@ -5,7 +5,7 @@ services:
             - { name: sonata.admin, manager_type: orm, group: admin.admin.menu_group_site_builder, label: menu.admin.menu.menu }
         arguments:
             - null
-            - Application\MenuBundle\Entity\Menu
+            - Awaresoft\MenuBundle\Entity\Menu
             - AwaresoftMenuBundle:MenuCRUD
             - "@service_container"
         calls:

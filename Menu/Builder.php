@@ -3,13 +3,16 @@
 namespace Awaresoft\MenuBundle\Menu;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityRepository;
 use Knp\Menu\FactoryInterface;
 use Knp\Menu\ItemInterface;
 use Knp\Menu\MenuItem;
 use Awaresoft\MenuBundle\Entity\Menu;
 use Awaresoft\MenuBundle\Entity\MenuRepository;
 use Awaresoft\MenuBundle\Exception\MenuException;
-use Symfony\Component\DependencyInjection\ContainerAware;
+use Sonata\PageBundle\Site\SiteSelectorInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Class Builder
@@ -17,7 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerAware;
  *
  * @author Bartosz Malec <b.malec@awaresoft.pl>
  */
-class Builder extends ContainerAware
+class Builder
 {
     /**
      * @var MenuItem
@@ -30,33 +33,70 @@ class Builder extends ContainerAware
     protected $root;
 
     /**
-     * @var MenuRepository
-     */
-    protected $menuRepository;
-
-    /**
      * @var EntityManager
      */
     protected $em;
 
     /**
-     * Generate menu with options (attr position determine position of menu)
+     * @var SiteSelectorInterface
+     */
+    protected $siteSelector;
+
+    /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var FactoryInterface
+     */
+    protected $factory;
+
+    /**
+     * @var MenuRepository|EntityRepository
+     */
+    protected $menuRepository;
+
+    /**
+     * Builder constructor.
      *
      * @param FactoryInterface $factory
+     * @param SiteSelectorInterface $siteSelector
+     * @param EntityManager $em
+     * @param string $menuRepository
+     */
+    public function __construct(FactoryInterface $factory, SiteSelectorInterface $siteSelector, EntityManager $em, string $menuRepository) {
+        $this->factory = $factory;
+        $this->siteSelector = $siteSelector;
+        $this->em = $em;
+        $this->menuRepository = $this->em->getRepository($menuRepository);
+    }
+
+    /**
+     * Generate menu with options (attr position determine position of menu)
+     *
+     * @param RequestStack $requestStack
      * @param array $options
+     *
      * @return ItemInterface|MenuItem
+     *
      * @throws MenuException
      */
-    public function menu(FactoryInterface $factory, array $options)
+    public function menu(RequestStack $requestStack, array $options)
     {
-        $site = $this->container->get('sonata.page.site.selector')->retrieve();
+        /**
+         * @var $menuItems Menu[]
+         */
 
         if (!isset($options['position'])) {
             throw new MenuException('Parameter position is empty');
         }
 
-        $this->menu = $factory->createItem('root');
-        $this->root = $this->getMenuRepository()->findOneBy(['name' => $options['position'], 'site' => $site]);
+        $site = $this->siteSelector->retrieve();
+
+        $this->request = $requestStack->getCurrentRequest();
+        $this->menu = $this->factory->createItem('root');
+        $this->root = $this->menuRepository->findOneBy(['name' => $options['position'], 'site' => $site]);
         $this->menu->setExtra('object', $this->root);
 
         if (isset($options['attributes'])) {
@@ -71,7 +111,7 @@ class Builder extends ContainerAware
             return $this->menu;
         }
 
-        $menuItems = $this->getMenuRepository()->getChildren($this->root);
+        $menuItems = $this->menuRepository->getChildren($this->root);
         $deletedParents = [];
 
         // remove disabled menu items
@@ -124,14 +164,20 @@ class Builder extends ContainerAware
     /**
      * Add child to menu object
      *
-     * @param MenuItem $menu
+     * @param ItemInterface $menu
      * @param Menu $item
-     * @return MenuItem
+     * @param bool $child
+     *
+     * @return ItemInterface
      */
-    protected function addChild($menu, $item, $child = false)
+    protected function addChild(ItemInterface $menu, $item, $child = false)
     {
-        $baseUrl = $this->getRequest()->getBaseUrl();
-        $baseUrl = $baseUrl . $this->container->get('sonata.page.site.selector')->getRequestContext()->getBaseUrl();
+        $baseUrl = $this->request->getBaseUrl();
+        $baseUrl = sprintf(
+            '%s%s',
+            $baseUrl,
+            $this->siteSelector->getRequestContext()->getBaseUrl()
+        );
 
         $uri = null;
         $attributes = [];
@@ -232,42 +278,6 @@ class Builder extends ContainerAware
      */
     protected function setCurrentItem(ItemInterface $menu)
     {
-        $menu->setCurrent($this->container->get('request')->getPathInfo());
-    }
-
-    /**
-     * Return request from container
-     *
-     * @return \Symfony\Component\HttpFoundation\Request
-     */
-    protected function getRequest()
-    {
-        return $this->container->get('request_stack')->getCurrentRequest();
-    }
-
-    /**
-     * @return EntityManager
-     */
-    protected function getEntityManager()
-    {
-        return $this->container->get('doctrine.orm.entity_manager');
-    }
-
-    /**
-     * @return MenuRepository
-     */
-    protected function getMenuRepository()
-    {
-        if ($this->menuRepository) {
-            return $this->menuRepository;
-        }
-
-        if (!$this->em) {
-            $this->em = $this->getEntityManager();
-        }
-
-        $this->menuRepository = $this->em->getRepository('ApplicationMenuBundle:Menu');
-
-        return $this->menuRepository;
+        $menu->setCurrent($this->request->getPathInfo());
     }
 }
