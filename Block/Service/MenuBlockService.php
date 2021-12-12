@@ -1,6 +1,6 @@
 <?php
 
-namespace Awaresoft\MenuBundle\Block;
+namespace Awaresoft\MenuBundle\Block\Service;
 
 use Knp\Menu\Provider\MenuProviderInterface;
 use Sonata\BlockBundle\Block\BlockContextInterface;
@@ -16,7 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
  *
  * @author Bartosz Malec <b.malec@awaresoft.pl>
  */
-class MenuBlock extends BaseMenuBlockService
+class MenuBlockService extends BaseMenuBlockService
 {
     /**
      * Constructor
@@ -31,7 +31,7 @@ class MenuBlock extends BaseMenuBlockService
     {
         parent::__construct($name, $templating, $menuProvider, $menus);
 
-        if (count($this->menus) === 0) {
+        if (!$this->menus || count($this->menus) === 0) {
             $this->menus = $container->getParameter('awaresoft.menu')['menus'];
         }
     }
