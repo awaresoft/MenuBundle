@@ -1,0 +1,3 @@
+services:
+    Awaresoft\MenuBundle\DataFixtures\ORM\LoadMenuData:
+        tags: ['doctrine.fixture.orm']

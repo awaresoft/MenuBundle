@@ -1,6 +1,6 @@
 services:
     sonata.block.service.menu:
-        class: Awaresoft\MenuBundle\Block\Service\MenuBlockService
+        class: Awaresoft\MenuBundle\Block\Service\MenuBlock
         tags:
             - { name: sonata.block }
         arguments:

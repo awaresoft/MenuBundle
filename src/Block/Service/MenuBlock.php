@@ -6,6 +6,7 @@ use Knp\Menu\Provider\MenuProviderInterface;
 use Sonata\BlockBundle\Block\BlockContextInterface;
 use Sonata\BlockBundle\Block\Service\MenuBlockService as BaseMenuBlockService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\DependencyInjection\Container;
@@ -16,7 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
  *
  * @author Bartosz Malec <b.malec@awaresoft.pl>
  */
-class MenuBlockService extends BaseMenuBlockService
+class MenuBlock extends BaseMenuBlockService
 {
     /**
      * Constructor
@@ -78,7 +79,7 @@ class MenuBlockService extends BaseMenuBlockService
     protected function getFormSettingsKeys()
     {
         return [
-            ['menu_name', 'choice', ['choices' => $this->menus, 'required' => false]],
+            ['menu_name', ChoiceType::class, ['choices' => $this->menus, 'required' => false]],
         ];
     }
 

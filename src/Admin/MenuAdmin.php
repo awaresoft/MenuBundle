@@ -2,6 +2,7 @@
 
 namespace Awaresoft\MenuBundle\Admin;
 
+use Awaresoft\SettingBundle\Service\SettingService;
 use Awaresoft\Sonata\PageBundle\Entity\PageRepository;
 use Awaresoft\TreeBundle\Admin\AbstractTreeAdmin;
 use Awaresoft\MenuBundle\Entity\Menu;
@@ -10,6 +11,12 @@ use Sonata\AdminBundle\Show\ShowMapper;
 use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
+use Sonata\Form\Type\BooleanType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 
 /**
  * Class MenuAdmin
@@ -29,9 +36,28 @@ class MenuAdmin extends AbstractTreeAdmin
     protected $multisite = true;
 
     /**
+     * @var SettingService
+     */
+    protected $setting;
+
+    /**
      * @inheritdoc
      */
     protected $titleField = 'name';
+
+    /**
+     * @param $code
+     * @param $class
+     * @param $baseControllerName
+     * @param ContainerInterface $container
+     * @param SettingService $setting
+     */
+    public function __construct($code, $class, $baseControllerName, ContainerInterface $container, SettingService $setting)
+    {
+        parent::__construct($code, $class, $baseControllerName, $container);
+
+        $this->setting = $setting;
+    }
 
     /**
      * @inheritdoc
@@ -108,7 +134,7 @@ class MenuAdmin extends AbstractTreeAdmin
             ->add('page', null, [
                 'admin_code' => 'awaresoft.page.admin.cms',
             ])
-            ->add('url', 'url')
+            ->add('url', UrlType::class)
             ->add('externalUrl', 'boolean')
             ->end();
 
@@ -124,8 +150,8 @@ class MenuAdmin extends AbstractTreeAdmin
     {
         $listMapper
             ->add('site')
-            ->add('url', 'url')
-            ->add('externalUrl', 'boolean')
+            ->add('url', UrlType::class)
+            ->add('externalUrl', BooleanType::class)
             ->add('enabled', null, ['editable' => true]);
 
         $editable = false;
@@ -165,7 +191,7 @@ class MenuAdmin extends AbstractTreeAdmin
          * @var Menu $object
          */
         $object = $this->getSubject();
-        $maxDepthLevel = $this->prepareMaxDepthLevel('MENU');
+        $maxDepthLevel = $this->prepareMaxDepthLevel('MENU', $this->setting);
         $disabledName = false;
 
         $formMapper
@@ -183,6 +209,7 @@ class MenuAdmin extends AbstractTreeAdmin
         $formMapper
             ->add('name', null, [
                 'disabled' => $disabledName,
+                'help' => $disabledName ? $this->trans('menu.admin.help.name_as_group') : ''
             ]);
 
         $formMapper
@@ -209,7 +236,7 @@ class MenuAdmin extends AbstractTreeAdmin
 
         $formMapper
             ->with($this->trans('admin.admin.form.group.url'))
-            ->add('page', 'entity', [
+            ->add('page', EntityType::class, [
                 'class' => 'AwaresoftSonataPageBundle:Page',
                 'choice_label' => 'name',
                 'label' => $this->trans('admin.admin.label.redirect_to_page'),
@@ -220,21 +247,22 @@ class MenuAdmin extends AbstractTreeAdmin
             ], [
                 'admin_code' => 'awaresoft.page.admin.cms',
             ])
-            ->add('externalUrl', 'text', [
+            ->add('externalUrl', TextType::class, [
                 'required' => false,
             ])
-            ->add('url', 'text', [
+            ->add('url', TextType::class, [
                 'attr' => [
                     'readonly' => true,
                 ],
                 'required' => false,
+                'help' => $this->trans('admin.admin.help.url_page_or_plaintext')
             ])
             ->end();
 
         if ($object && !$object->getTemplate()) {
             $formMapper
                 ->with($this->trans('admin.admin.form.group.optional'))
-                ->add('header', 'textarea', [
+                ->add('header', TextareaType::class, [
                     'required' => false,
                 ])
                 ->end();
@@ -250,14 +278,6 @@ class MenuAdmin extends AbstractTreeAdmin
                     'required' => false,
                 ])
                 ->end();
-        }
-
-        $formMapper->setHelps([
-            'url' => $this->trans('admin.admin.help.url_page_or_plaintext'),
-        ]);
-
-        if ($disabledName) {
-            $formMapper->addHelp('name', $this->trans('menu.admin.help.name_as_group'));
         }
     }
 }
